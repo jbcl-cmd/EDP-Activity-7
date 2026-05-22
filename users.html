@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - School of Rock</title>
+    <meta name="description" content="Manage system users of the School of Rock Student Enrollment System.">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(74, 0, 0, 0.45); backdrop-filter: blur(3px); z-index: 1000; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: #fff; border-radius: 12px; padding: 36px 32px 28px; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(74,0,0,0.25); position: relative; animation: slideUp 0.25s ease; }
+        @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+        .modal-header h3 { font-size: 1.25rem; color: var(--maroon-dark); }
+        .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-secondary); line-height: 1; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+        .modal-close:hover { background: var(--maroon-pale); }
+        .modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .modal .form-group label { font-size: 0.82rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+        .modal .form-control { background: var(--bg-color); border-radius: 6px; }
+        .modal select.form-control { appearance: auto; }
+        .modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+        .modal-footer .btn { width: auto; padding: 10px 24px; }
+        #deleteModal .modal { max-width: 400px; text-align: center; }
+        #deleteModal .modal-body { margin: 10px 0 20px; color: var(--text-secondary); }
+        #deleteModal .modal-body strong { color: var(--maroon-primary); }
+        #deleteModal .modal-footer { justify-content: center; }
+        .btn-danger { background-color: #c0392b; color: white; }
+        .btn-danger:hover { background-color: #a93226; }
+        .toast { position: fixed; bottom: 28px; right: 28px; background: var(--maroon-dark); color: #fff; padding: 14px 22px; border-radius: 8px; font-size: 0.9rem; box-shadow: 0 6px 20px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px; z-index: 2000; animation: toastIn 0.3s ease; }
+        @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .toast.hidden { display: none; }
+        .search-bar { display: flex; align-items: center; gap: 10px; }
+        .search-bar input { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: var(--bg-color); width: 220px; transition: border-color 0.2s; }
+        .search-bar input:focus { outline: none; border-color: var(--maroon-primary); }
+        .tbl-action { display: inline-flex; gap: 8px; }
+        .btn-edit, .btn-del { padding: 5px 12px; border-radius: 5px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: opacity 0.2s; }
+        .btn-edit { background: var(--maroon-pale); color: var(--maroon-primary); }
+        .btn-edit:hover { opacity: 0.75; }
+        .btn-del { background: #fde8e8; color: #c0392b; }
+        .btn-del:hover { opacity: 0.75; }
+        .user-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 24px; }
+        .user-stat-card { background: var(--surface-color); border: 1px solid var(--border-color); border-left: 5px solid var(--maroon-primary); border-radius: 8px; padding: 18px 20px; }
+        .user-stat-card.green { border-left-color: #27ae60; }
+        .user-stat-card.orange { border-left-color: #e67e22; }
+        .user-stat-card label { display: block; font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .user-stat-card .val { font-size: 2rem; font-weight: 700; color: var(--maroon-primary); }
+        .user-stat-card.green .val { color: #27ae60; }
+        .user-stat-card.orange .val { color: #e67e22; }
+        .empty-state { text-align: center; padding: 48px 20px; color: var(--text-secondary); }
+        .empty-state span { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>School of Rock</h2>
+            <p>Enrollment System</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">Dashboard</a>
+            <a href="users.html"     class="nav-link active">Users</a>
+            <a href="students.html"  class="nav-link">Students</a>
+            <a href="reports.html"   class="nav-link">Reports</a>
+            <a href="about.html"     class="nav-link">About</a>
+            <a href="#"              class="nav-link logout-btn">Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <h2>User Management</h2>
+            <div class="user-info currentUser">Loading...</div>
+        </header>
+
+        <div class="content-area">
+            <!-- Mini Stats -->
+            <div class="user-stats">
+                <div class="user-stat-card">
+                    <label>Total Users</label>
+                    <div class="val" id="statTotal">0</div>
+                </div>
+                <div class="user-stat-card green">
+                    <label>Active</label>
+                    <div class="val" id="statActive">0</div>
+                </div>
+                <div class="user-stat-card orange">
+                    <label>Inactive</label>
+                    <div class="val" id="statInactive">0</div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card">
+                <div class="table-header">
+                    <h3>Registered Users</h3>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Search users…" oninput="filterTable()">
+                        <button class="btn btn-primary" id="btnAddUser" style="width:auto; padding: 9px 18px;" onclick="openAddModal()">
+                            + Add User
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Contact</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTbody">
+                            <!-- Populated via API -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <h3>➕ Add New User</h3>
+            <button class="modal-close" onclick="closeModal('addModal')">&times;</button>
+        </div>
+        <form id="addUserForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" name="contact_number" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" name="address" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Account Status</label>
+                    <select name="account_status" class="form-control">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" name="password" class="form-control" required>
+                    <button type="button" class="password-toggle-btn toggle-password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <h3>✏️ Edit User</h3>
+            <button class="modal-close" onclick="closeModal('editModal')">&times;</button>
+        </div>
+        <form id="editUserForm">
+            <input type="hidden" name="user_id" id="edit_user_id">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="edit_first_name" name="first_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="edit_last_name" name="last_name" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="edit_email" name="email" class="form-control" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" id="edit_contact" name="contact_number" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" id="edit_address" name="address" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Account Status</label>
+                    <select id="edit_status" name="account_status" class="form-control">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>New Password (Leave blank to keep current)</label>
+                <div class="password-wrapper">
+                    <input type="password" name="password" class="form-control" placeholder="••••••••">
+                    <button type="button" class="password-toggle-btn toggle-password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header" style="justify-content:center; border-bottom:none;">
+            <h3 style="color:#c0392b;">🗑️ Confirm Delete</h3>
+        </div>
+        <div class="modal-body">
+            Are you sure you want to permanently delete<br>
+            <strong id="deleteUserName"></strong>?<br>
+            <small style="color:#999; margin-top:6px; display:block;">This action cannot be undone.</small>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+            <button id="btnConfirmDelete" class="btn btn-danger">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js?v=3"></script>
+</body>
+</html>

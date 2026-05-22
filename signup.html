@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - School of Rock</title>
+    <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+    <div class="auth-container">
+        <main class="auth-card" style="max-width: 500px;">
+            <header class="auth-header">
+                <h1>School of Rock</h1>
+                <p>Student Admin System</p>
+            </header>
+            <form id="signupForm">
+                <div id="signupMessage" style="display:none; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;"></div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact_number">Contact Number (Optional)</label>
+                    <input type="text" id="contact_number" name="contact_number" class="form-control" placeholder="">
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address (For Recovery Verification)</label>
+                    <input type="text" id="address" name="address" class="form-control" placeholder="" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <button type="button" class="password-toggle-btn toggle-password">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="margin-bottom: 15px;">SIGN UP</button>
+                
+                <div class="auth-links" style="text-align: center;">
+                    <a href="index.html">Already have an account? Sign in</a>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="script.js?v=5"></script>
+</body>
+</html>

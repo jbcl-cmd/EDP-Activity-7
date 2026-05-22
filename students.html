@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management - School of Rock</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(74, 0, 0, 0.45); backdrop-filter: blur(3px); z-index: 1000; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: #fff; border-radius: 12px; padding: 36px 32px 28px; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(74,0,0,0.25); position: relative; animation: slideUp 0.25s ease; }
+        @keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+        .modal-header h3 { font-size: 1.25rem; color: var(--maroon-dark); }
+        .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-secondary); line-height: 1; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+        .modal-close:hover { background: var(--maroon-pale); }
+        .modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .modal .form-group label { font-size: 0.82rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+        .modal .form-control { background: var(--bg-color); border-radius: 6px; }
+        .modal select.form-control { appearance: auto; }
+        .modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+        .modal-footer .btn { width: auto; padding: 10px 24px; }
+        #deleteModal .modal { max-width: 400px; text-align: center; }
+        #deleteModal .modal-body { margin: 10px 0 20px; color: var(--text-secondary); }
+        #deleteModal .modal-body strong { color: var(--maroon-primary); }
+        #deleteModal .modal-footer { justify-content: center; }
+        .btn-danger { background-color: #c0392b; color: white; }
+        .btn-danger:hover { background-color: #a93226; }
+        .search-bar { display: flex; align-items: center; gap: 10px; }
+        .search-bar input { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; background: var(--bg-color); width: 220px; transition: border-color 0.2s; }
+        .search-bar input:focus { outline: none; border-color: var(--maroon-primary); }
+        .tbl-action { display: inline-flex; gap: 8px; }
+        .btn-edit, .btn-del { padding: 5px 12px; border-radius: 5px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; transition: opacity 0.2s; }
+        .btn-edit { background: var(--maroon-pale); color: var(--maroon-primary); }
+        .btn-edit:hover { opacity: 0.75; }
+        .btn-del { background: #fde8e8; color: #c0392b; }
+        .btn-del:hover { opacity: 0.75; }
+        .user-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 24px; }
+        .user-stat-card { background: var(--surface-color); border: 1px solid var(--border-color); border-left: 5px solid var(--maroon-primary); border-radius: 8px; padding: 18px 20px; }
+        .user-stat-card.green { border-left-color: #27ae60; }
+        .user-stat-card.orange { border-left-color: #e67e22; }
+        .user-stat-card label { display: block; font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .user-stat-card .val { font-size: 2rem; font-weight: 700; color: var(--maroon-primary); }
+        .user-stat-card.green .val { color: #27ae60; }
+        .user-stat-card.orange .val { color: #e67e22; }
+        .empty-state { text-align: center; padding: 48px 20px; color: var(--text-secondary); }
+        .empty-state span { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+        /* Inactive Reason Dropdown */
+        .reason-group { display: none; margin-top: -4px; animation: reasonSlide 0.25s ease; }
+        .reason-group.visible { display: block; }
+        @keyframes reasonSlide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .reason-group label { color: #c0392b !important; }
+        .reason-group select { border-color: #e67e22; }
+        .badge-dropped { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .badge-transferred { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+        .badge-loa { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>School of Rock</h2>
+            <p>Enrollment System</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">Dashboard</a>
+            <a href="users.html"     class="nav-link">Users</a>
+            <a href="students.html"  class="nav-link active">Students</a>
+            <a href="reports.html"   class="nav-link">Reports</a>
+            <a href="about.html"     class="nav-link">About</a>
+            <a href="index.html"     class="nav-link logout-btn">Logout</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <h2>Student Management</h2>
+            <div class="user-info currentUser">Loading...</div>
+        </header>
+
+        <div class="content-area">
+            <!-- Mini Stats -->
+            <div class="user-stats">
+                <div class="user-stat-card">
+                    <label>Total Students</label>
+                    <div class="val" id="statTotalStudents">0</div>
+                </div>
+                <div class="user-stat-card green">
+                    <label>Active</label>
+                    <div class="val" id="statActiveStudents">0</div>
+                </div>
+                <div class="user-stat-card orange">
+                    <label>Inactive</label>
+                    <div class="val" id="statInactiveStudents">0</div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card">
+                <div class="table-header">
+                    <h3>All Students</h3>
+                    <div class="search-bar">
+                        <input type="text" id="studentSearchInput" placeholder="Search students…" oninput="filterStudentsTable()">
+                        <button class="btn btn-primary" id="btnAddStudent" style="width:auto; padding: 9px 18px;" onclick="openAddStudentModal()">
+                            + Add Student
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Contact</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTbody">
+                            <!-- Populated via API -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addStudentModal">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <h3>🎓 Add New Student</h3>
+            <button class="modal-close" onclick="closeModal('addStudentModal')">&times;</button>
+        </div>
+        <form id="addStudentForm">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" name="contact_number" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" id="add_student_status" class="form-control" onchange="toggleReasonField('add')">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group reason-group" id="add_reason_group">
+                <label>⚠ Reason for Inactive Status</label>
+                <select name="inactive_reason" id="add_inactive_reason" class="form-control">
+                    <option value="">— Select Reason —</option>
+                    <option value="Dropped">Dropped</option>
+                    <option value="Transferred">Transferred</option>
+                    <option value="Leave of Absence">Leave of Absence</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" name="address" class="form-control">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addStudentModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Student</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editStudentModal">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <h3>✏️ Edit Student</h3>
+            <button class="modal-close" onclick="closeModal('editStudentModal')">&times;</button>
+        </div>
+        <form id="editStudentForm">
+            <input type="hidden" name="student_id" id="edit_student_id">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="edit_student_name" name="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="edit_student_email" name="email" class="form-control" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" id="edit_student_contact" name="contact_number" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="edit_student_status" name="status" class="form-control" onchange="toggleReasonField('edit')">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group reason-group" id="edit_reason_group">
+                <label>Reason for Inactive Status</label>
+                <select name="inactive_reason" id="edit_inactive_reason" class="form-control">
+                    <option value="">— Select Reason —</option>
+                    <option value="Dropped">Dropped</option>
+                    <option value="Transferred">Transferred</option>
+                    <option value="Leave of Absence">Leave of Absence</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="edit_student_address" name="address" class="form-control">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editStudentModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Student</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="deleteStudentModal">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header" style="justify-content:center; border-bottom:none;">
+            <h3 style="color:#c0392b;">🗑️ Confirm Delete</h3>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+            Are you sure you want to delete student<br>
+            <strong id="deleteStudentName"></strong>?<br>
+        </div>
+        <div class="modal-footer" style="justify-content:center;">
+            <button class="btn btn-secondary" onclick="closeModal('deleteStudentModal')">Cancel</button>
+            <button id="btnConfirmDeleteStudent" class="btn btn-danger">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js?v=10"></script>
+</body>
+</html>
